@@ -3,16 +3,10 @@
 % Autor: Luis Antonio Lopes / Modificado por: Julio Almeida e Mirian Rosa
 % -----------------------------------------------------------------------
 
-uiwait(msgbox('Este programa irá executar o cálculo das curvas de impedÂncia a partir dos dados extraídos anteriomente. Clique em OK para prosseguir com a rotina.','Programa de Cálculo de Curvas','modal'));
+uiwait(msgbox('Este programa irá executar o cálculo das curvas de impedância a partir dos dados extraídos anteriomente. Clique em OK para prosseguir com a rotina.','Programa de Cálculo de Curvas','modal'));
 
-% MUDAR MENSAGEM AQUI EMBAIXO DEPOIS
-
-% O circuito consiste em um transdutor piezoelétrico em série com um
-% resistor simples, cuja tensão (VR) será medida pelo NI DAQ USB-6211
-% enquanto o piezoelétrico está acoplado à estrutura a ser analizada,
-% com o objetivo de se descobrir a corrente total do circuito enquanto
-% o USB-6211 o excita com diferentes sinais de entrada para, posterior-
-% mente, calcular-se as curvas de impedância da estrutura.
+% Os dados extraídos do circuito analisador pelo NI DAQ USB-6211 serão sub-
+% metido a rotina de cálculo da curva de impedância.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -23,6 +17,12 @@ uiwait(msgbox('Este programa irá executar o cálculo das curvas de impedÂncia a p
 % - aleatório (sinal gerado pela função "randn" com zero de média e 1 de variância)
 % - idinput (sinal pseudoaleatório binário previamente gerado pela função "idinput")
 
+% Não é necessário pedir os parametros anteriores pois as variaveis "r1,
+% numero de ensaios, medidas, f-chirp e numero de pontos do sinal continuam
+% na workspace e não foram alteradas furante a rotina anterior (Eu acho). Assim nao é
+% necessario pedir para o usuario colocar tudo igaul a antes. Se alguma
+% hora isso for pedido, fazer mais variaveis que nao serao alteradas nunca
+% para poder usar aqui.
 
 prompt = {'Resistência (valor real, em \Omega):','Número de ensaios:','Número de medidas por ensaio:','Número de pontos do sinal aleatório:','Frequência máxima do sinal chirp:'};
 title = 'Parâmetros';
@@ -122,3 +122,9 @@ curva_imped_mod1_idinput=curva_imped_mod1_idinput';
  
 x=0:1:511;
 plot(x,curva_imped_mod1_idinput(:,1))
+
+x=0:1:511;
+plot(x,curva_imped_mod1_chirp(:,1))
+
+x=0:1:511;
+plot(x,curva_imped_mod1_aleat(:,1))

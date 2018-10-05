@@ -77,7 +77,7 @@ ai
 for i=1:num_ensaios
     
     
-    % Ensaio sinal aleatório
+    % Ensaio Sinal Aleatório
     
     j=0;
     while (j<medidas)
@@ -86,26 +86,29 @@ for i=1:num_ensaios
     sinal_excit_aleat = randn(num_pontos_sinal,1);
     sinal_excit_aleat = sinal_excit_aleat./(max(abs(sinal_excit_aleat)));
 
-    putsample(ao,[0])                  % Garante que o AnalogOutput começa no zero
+    putsample(ao,[0])                       % Garante que o AnalogOutput começa no zero
 
-    putdata(ao,[sinal_excit_aleat])    % Carrega o sinal teste no buffer do AnalogOutput
+    putdata(ao,[sinal_excit_aleat])         % Carrega o sinal teste no buffer do AnalogOutput
 
-    start(ao)                          % É necessário iniciar o AnalogOutput primeiros para
-    start(ai)                          % que este aguarde o início do AnalogInput
+    start(ao)                               % É necessário iniciar o AnalogOutput primeiro para
+    start(ai)                               % que este aguarde o início do AnalogInput
 
-    [data_aleat,time] = getdata(ai);   % Retorna o resultado.
+    [data_aleat,time] = getdata(ai);        % Retorna o resultado
 
-    stop([ai,ao])                      % Finaliza o AnalogOutput e o AnalogInput
+    stop([ai,ao])                           % Finaliza o AnalogOutput e o AnalogInput
 
-    putsample(ao,[0])                  % Recoloca o AnalogOutput em zero
+    putsample(ao,[0])                       % Recoloca o AnalogOutput em zero
 
-    data_aleat = data_aleat./r1;      %  Como "data" é a tensão entre os terminais do resistor,
-                                      %  então divide-se pela resistência para achar a
-                                      %  corrente.
+    data_aleat = data_aleat./r1;            %  Como "data" é a tensão entre os terminais do resistor,
+                                            %  então divide-se pela resistência para achar a
+                                            %  corrente.
     
-    if (mean(abs(data_aleat))>8e-005) % Checar se houve erro da medida
-        
-    out_aleat(:,(j+(i-1)*3))= data_aleat;
+                                            
+    if (mean(abs(data_aleat))>8e-005)       % Checa se houve sinal de resposta extraído ou se os valores
+                                            % lidos são iguais a zero (menor que 0.00008 - praticamente nulo).
+                                            
+    out_aleat(:,(j+(i-1)*3))= data_aleat;         % Caso não haja erro, guardar na variável a ser utilizada 
+                                                  % pelo programa de cálculo de curvas de impedÂncia. 
     in_aleat(:,(j+(i-1)*3))= sinal_excit_aleat;
         
     else
@@ -115,7 +118,7 @@ for i=1:num_ensaios
                                       
     'Realizar nova medida'
     
-    pause
+    j
 
     end
     
@@ -158,7 +161,7 @@ for i=1:num_ensaios
     
     'Realizar nova medida'
     
-    pause
+   j
 
     end
     
@@ -196,17 +199,13 @@ for i=1:num_ensaios
     end
     
     'Realizar nova medida'
-    
-    pause
 
     end
+   
+    j
     
-       
-    i
     
-    'Fim das medidas. Modificar dano da barra.'
-    
-    pause
+    'Fim de um ensaio.'
 
 end
 
