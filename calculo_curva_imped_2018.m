@@ -1,0 +1,124 @@
+
+% Programa de Cálculo das Curvas de Impedância
+% Autor: Luis Antonio Lopes / Modificado por: Julio Almeida e Mirian Rosa
+% -----------------------------------------------------------------------
+
+uiwait(msgbox('Este programa irá executar o cálculo das curvas de impedÂncia a partir dos dados extraídos anteriomente. Clique em OK para prosseguir com a rotina.','Programa de Cálculo de Curvas','modal'));
+
+% MUDAR MENSAGEM AQUI EMBAIXO DEPOIS
+
+% O circuito consiste em um transdutor piezoelétrico em série com um
+% resistor simples, cuja tensão (VR) será medida pelo NI DAQ USB-6211
+% enquanto o piezoelétrico está acoplado à estrutura a ser analizada,
+% com o objetivo de se descobrir a corrente total do circuito enquanto
+% o USB-6211 o excita com diferentes sinais de entrada para, posterior-
+% mente, calcular-se as curvas de impedância da estrutura.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Resistor proposto: 500 Ohms
+
+% Sinais de excitação:
+% - chirp (sinal de frequência que varia de zero a 30KHz e tem duração de 1s)
+% - aleatório (sinal gerado pela função "randn" com zero de média e 1 de variância)
+% - idinput (sinal pseudoaleatório binário previamente gerado pela função "idinput")
+
+
+prompt = {'Resistência (valor real, em \Omega):','Número de ensaios:','Número de medidas por ensaio:','Número de pontos do sinal aleatório:','Frequência máxima do sinal chirp:'};
+title = 'Parâmetros';
+definput = {'518.6','10','3','250000','30000'}; % Padrões definidos, respectivamente, para a resistência, número de ensaios e número de medidas por ensaio.
+opts.Interpreter = 'tex'; % Interpretador para o símbolo de Ohms (\Omega).
+parametros = inputdlg(prompt,title,[1 45],definput,opts) % Entrada de parâmetros, tendo os padrões já escritos como opção.
+
+r1 = str2double(parametros{1});             % Atribuição dos parâmetros
+r1                                          % indicados manualmente para
+num_ensaios = str2double(parametros{2});    % variáveis.
+num_ensaios
+medidas = str2double(parametros{3});
+medidas
+num_pontos_sinal = str2double(parametros{4});
+num_pontos_sinal
+f_chirp = str2double(parametros{5});
+f_chirp
+
+
+for i=1:num_ensaios
+    
+    
+    % Curva Impedância - Sinal aleatório
+        
+    for j=1:medidas
+    
+    [DFT_corrente2(:,j),w] = freqz(out_aleat(:,(j+(i-1)*medidas)));       %Transformada discreta de fourier
+    [DFT_tensao2(:,j),w] = freqz(in_aleat(:,(j+(i-1)*medidas)));
+
+    REAL_corrente2(:,j)=abs(DFT_corrente2(:,j));                %Parte real da DFT
+    REAL_tensao2(:,j)=abs(DFT_tensao2(:,j));
+
+    Z_media2(:,j)= REAL_tensao2(:,j)./ REAL_corrente2(:,j);
+    
+    end
+
+    
+    Z_media2=Z_media2';
+    
+    Z_final2=mean(Z_media2);   %Impedância real do circuito
+    
+    curva_imped_mod1_aleat(i,:)=Z_final2;
+        
+    % Curva impedância sinal chirp
+    
+    Z_media2=Z_media2';
+    
+    for j=1:medidas
+    
+    [DFT_corrente2(:,j),w] = freqz(out_chirp(:,(j+(i-1)*medidas)));       %Transformada discreta de fourier
+    [DFT_tensao2(:,j),w] = freqz(in_chirp(:,(j+(i-1)*medidas)));
+
+    REAL_corrente2(:,j)=abs(DFT_corrente2(:,j));                %Parte real da DFT
+    REAL_tensao2(:,j)=abs(DFT_tensao2(:,j));
+    
+    Z_media2(:,j)= REAL_tensao2(:,j)./ REAL_corrente2(:,j);
+
+    end
+
+    Z_media2=Z_media2';
+    
+    Z_final2=mean(Z_media2);   %Impedância real do circuito
+    
+    curva_imped_mod1_chirp(i,:)=Z_final2;
+   
+    
+    % Curva impedância sinal idinput
+    
+    Z_media2=Z_media2';
+    
+    for j=1:medidas
+    
+    [DFT_corrente2(:,j),w] = freqz(out_idinput(:,(j+(i-1)*medidas)));       %Transformada discreta de fourier
+    [DFT_tensao2(:,j),w] = freqz(in_idinput(:,(j+(i-1)*medidas)));
+
+    REAL_corrente2(:,j)=abs(DFT_corrente2(:,j));                %Parte real da DFT
+    REAL_tensao2(:,j)=abs(DFT_tensao2(:,j));
+    
+    Z_media2(:,j)= REAL_tensao2(:,j)./ REAL_corrente2(:,j);
+
+    end
+
+    Z_media2=Z_media2';
+    
+    Z_final2=mean(Z_media2);   %Impedância real do circuito
+    
+    curva_imped_mod1_idinput(i,:)=Z_final2;
+        
+    Z_media2=Z_media2';
+    
+    
+end
+
+curva_imped_mod1_aleat=curva_imped_mod1_aleat';
+curva_imped_mod1_chirp=curva_imped_mod1_chirp';
+curva_imped_mod1_idinput=curva_imped_mod1_idinput';
+ 
+x=0:1:511;
+plot(x,curva_imped_mod1_idinput(:,1))

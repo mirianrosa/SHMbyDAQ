@@ -1,0 +1,106 @@
+
+% Cálculo das curvas de impedância
+% --------------------------------
+
+mensagem = helpdlg('Este programa irá executar a rotina de extração de curvas de impedância através do método de impedância eletromecância. Aperte qualquer tecla na tela de comando para prosseguir com a rotina', 'Programa de ensaio SHM-EMI')
+
+pause
+;
+% Circuito: resistor simples
+% Resistor utilizado na dissertação de Mestrado: 470 ohms
+% Sinal excitação: chirp (zero a 30KHz e duração de 1s)
+%                  aleatório (função "randn" com zero de média e 1 de variância)
+%                  idinput
+
+%parametros = inputdlg({'Resistência (ohms - default 470)','Número de ensaios (default 10)','Número medidas por ensaio (default 3)'},'PARÂMETROS') % Inserir valor dos parâmetros
+%r1=parametros{1};          % valor resistência (proposta: 470)
+r1=518.6;
+
+%num_ensaios = parametros{2};         % Número de ensaios (proposta: 10)
+num_ensaios = 1;
+%medidas = parametros{3};             % Número medidas por ensaio (proposta: 3)
+medidas = 1;
+
+
+
+for i=1:num_ensaios
+    
+    
+    % Modelo 1
+        
+    % Curva impedância sinal aleatório
+        
+    for j=1:medidas
+    
+    [DFT_corrente2(:,j),w] = freqz(out_aleat(:,(j+(i-1)*medidas)));       %Transformada discreta de fourier
+    [DFT_tensao2(:,j),w] = freqz(in_aleat(:,(j+(i-1)*medidas)));
+
+    REAL_corrente2(:,j)=abs(DFT_corrente2(:,j));                %Parte real da DFT
+    REAL_tensao2(:,j)=abs(DFT_tensao2(:,j));
+
+    Z_media2(:,j)= REAL_tensao2(:,j)./ REAL_corrente2(:,j);
+    
+    end
+
+    
+    Z_media2=Z_media2';
+    
+    Z_final2=mean(Z_media2);   %Impedância real do circuito
+    
+    curva_imped_mod1_aleat(i,:)=Z_final2;
+        
+    % Curva impedância sinal chirp
+    
+    Z_media2=Z_media2';
+    
+    for j=1:medidas
+    
+    [DFT_corrente2(:,j),w] = freqz(out_chirp(:,(j+(i-1)*medidas)));       %Transformada discreta de fourier
+    [DFT_tensao2(:,j),w] = freqz(in_chirp(:,(j+(i-1)*medidas)));
+
+    REAL_corrente2(:,j)=abs(DFT_corrente2(:,j));                %Parte real da DFT
+    REAL_tensao2(:,j)=abs(DFT_tensao2(:,j));
+    
+    Z_media2(:,j)= REAL_tensao2(:,j)./ REAL_corrente2(:,j);
+
+    end
+
+    Z_media2=Z_media2';
+    
+    Z_final2=mean(Z_media2);   %Impedância real do circuito
+    
+    curva_imped_mod1_chirp(i,:)=Z_final2;
+   
+    
+    % Curva impedância sinal idinput
+    
+    Z_media2=Z_media2';
+    
+    for j=1:medidas
+    
+    [DFT_corrente2(:,j),w] = freqz(out_idinput(:,(j+(i-1)*medidas)));       %Transformada discreta de fourier
+    [DFT_tensao2(:,j),w] = freqz(in_idinput(:,(j+(i-1)*medidas)));
+
+    REAL_corrente2(:,j)=abs(DFT_corrente2(:,j));                %Parte real da DFT
+    REAL_tensao2(:,j)=abs(DFT_tensao2(:,j));
+    
+    Z_media2(:,j)= REAL_tensao2(:,j)./ REAL_corrente2(:,j);
+
+    end
+
+    Z_media2=Z_media2';
+    
+    Z_final2=mean(Z_media2);   %Impedância real do circuito
+    
+    curva_imped_mod1_idinput(i,:)=Z_final2;
+        
+    Z_media2=Z_media2';
+    
+    
+end
+
+curva_imped_mod1_aleat=curva_imped_mod1_aleat';
+curva_imped_mod1_chirp=curva_imped_mod1_chirp';
+curva_imped_mod1_idinput=curva_imped_mod1_idinput';
+                                   
+plot(x,curva_imped_mod1_idinput(:,1))
