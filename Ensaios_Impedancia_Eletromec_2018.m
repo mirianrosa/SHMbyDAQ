@@ -1,7 +1,6 @@
-
 % Programa de Aquisição de Dados por Impedância Eletromecânica (Ensaios)
-% Autor: Luis Antonio Lopes / Modificado por: Julio Almeida e Mirian Rosa
-% -----------------------------------------------------------------------
+% Autor: Luis Antonio Lopes / Modificado por: Mirian Rosa e Julio Almeida
+% -------------------------------------------------------------------------
 
 uiwait(msgbox('Este programa irá executar a rotina de extração de dados através do método de impedância eletromecânica para posterior cálculo de curvas. Clique em OK para prosseguir com a rotina.','Programa de Aquisição de Dados','modal'));
 
@@ -12,14 +11,16 @@ uiwait(msgbox('Este programa irá executar a rotina de extração de dados através 
 % o USB-6211 o excita com diferentes sinais de entrada para, posterior-
 % mente, calcular-se as curvas de impedância da estrutura.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Resistor proposto: 500 Ohms
-
 % Sinais de excitação:
 % - chirp (sinal de frequência que varia de zero a 30KHz e tem duração de 1s)
 % - aleatório (sinal gerado pela função "randn" com zero de média e 1 de variância)
 % - idinput (sinal pseudoaleatório binário previamente gerado pela função "idinput")
+% Resistor proposto: 
+% - 500 Ohms
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Definição de parâmetros
 
 prompt = {'Resistência (valor real, em \Omega):','Número de ensaios:','Número de medidas por ensaio:','Número de pontos do sinal aleatório:','Frequência máxima do sinal chirp:'};
 title = 'Parâmetros';
@@ -31,25 +32,14 @@ r1 = str2double(parametros{1});             % Atribuição dos parâmetros
 r1                                          % indicados manualmente para
 num_ensaios = str2double(parametros{2});    % variáveis.
 num_ensaios
-medidas = str2double(parametros{3});
-medidas
+num_medidas = str2double(parametros{3});
+num_medidas
 num_pontos_sinal = str2double(parametros{4});
 num_pontos_sinal
 f_chirp = str2double(parametros{5});
 f_chirp
 
 
-load ('sinal_excit_idinput_band125.mat')
-% Carrega automaticamente o sinal de excitação idinput que precisa estar na mesma 
-% pasta e diretório deste código-base.
-
-% No caso de não existir o arquivo, gerar um novo sinal atráves da Command Window
-% sinal_pseudrand_binario = idinput(250000,'PRBS',[0,1],[-1 1])
-% e salvar a nova variável (in Workspace) com o nome sinal_excit_idinput_band125.mat
-% no mesmo diretório deste código-base.
-
-% Observações adicionais sobre a função idinput: [0,1] - 125 kHz / [0,0.36] - 45 kHz
-                
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Configuração DAQ
@@ -70,17 +60,27 @@ ai.SamplesPerTrigger = 250000;
 ai.TriggerType = 'Immediate';
 ai.ExternalTriggerDriveLine = 'PFI4';
 ai
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
+% Aquisição de Dados
 
-                   
+load ('sinal_excit_idinput_band125.mat')
+% Carrega automaticamente o sinal de excitação idinput que precisa estar na mesma 
+% pasta e diretório deste código-base.
 
+% No caso de não existir o arquivo, gerar um novo sinal atráves da Command Window
+% sinal_pseudrand_binario = idinput(250000,'PRBS',[0,1],[-1 1])
+% e salvar a nova variável (in Workspace) com o nome sinal_excit_idinput_band125.mat
+% no mesmo diretório deste código-base.
+         
 for i=1:num_ensaios
     
     
     % Ensaio Sinal Aleatório
     
     j=0;
-    while (j<medidas)
+    while (j<num_medidas)
     j=j+1;
     
     sinal_excit_aleat = randn(num_pontos_sinal,1);
@@ -110,8 +110,8 @@ for i=1:num_ensaios
     if (mean(abs(data_aleat))>8e-005)       % Checa se houve sinal de resposta extraído ou se os valores
                                             % lidos são iguais a zero (menor que 0.00008 - praticamente nulo).
                                             
-    out_aleat(:,(j+(i-1)*medidas))= data_aleat;         % Caso não haja erro, guardar os sinais de entrada e saída nas variáveis a serem utilizadas 
-    in_aleat(:,(j+(i-1)*medidas))= sinal_excit_aleat;   % pelo programa de cálculo de curvas de impedância.
+    out_aleat(:,(j+(i-1)*num_medidas))= data_aleat;         % Caso não haja erro, guardar os sinais de entrada e saída nas variáveis a serem utilizadas 
+    in_aleat(:,(j+(i-1)*num_medidas))= sinal_excit_aleat;   % pelo programa de cálculo de curvas de impedância.
         
     else
         'Erro: leitura nula'
@@ -125,7 +125,7 @@ for i=1:num_ensaios
     % Ensaio Sinal Chirp
            
     j=0;
-    while (j<medidas)
+    while (j<num_medidas)
     j=j+1;
     
     t_chirp = 0.000004:0.000004:1;                       % Totaliza 250k intervalos de tempo em um segundo.
@@ -155,8 +155,8 @@ for i=1:num_ensaios
                                        % lidos são iguais a zero (menor que 0.00008 - praticamente nulo).        
     
                                       
-    out_chirp(:,(j+(i-1)*medidas))= data_chirp;         % Caso não haja erro, guardar os sinais de entrada e saída nas variáveis a serem utilizadas 
-    in_chirp(:,(j+(i-1)*medidas))= sinal_excit_chirp;   % pelo programa de cálculo de curvas de impedÂncia.
+    out_chirp(:,(j+(i-1)*num_medidas))= data_chirp;         % Caso não haja erro, guardar os sinais de entrada e saída nas variáveis a serem utilizadas 
+    in_chirp(:,(j+(i-1)*num_medidas))= sinal_excit_chirp;   % pelo programa de cálculo de curvas de impedÂncia.
 
     else
         'Erro: leitura nula'
@@ -169,7 +169,7 @@ for i=1:num_ensaios
     % Ensaio Sinal Idinput
     
     j=0;
-    while (j<medidas)
+    while (j<num_medidas)
     j=j+1;
     
     'Realizando medida sinal idinput'
@@ -195,8 +195,8 @@ for i=1:num_ensaios
     if (mean(abs(data_idinput))>8e-005)        % Checa se houve sinal de resposta extraído ou se os valores
                                                % lidos são iguais a zero (menor que 0.00008 - praticamente nulo).
         
-    out_idinput(:,(j+(i-1)*medidas))= data_idinput;                 % Caso não haja erro, guardar os sinais de entrada e saída 
-    in_idinput(:,(j+(i-1)*medidas))= sinal_excit_idinput_band125;   % nas variáveis a serem utilizadas pelo programa de cálculo de curvas de impedância.
+    out_idinput(:,(j+(i-1)*num_medidas))= data_idinput;                 % Caso não haja erro, guardar os sinais de entrada e saída 
+    in_idinput(:,(j+(i-1)*num_medidas))= sinal_excit_idinput_band125;   % nas variáveis a serem utilizadas pelo programa de cálculo de curvas de impedância.
     
                                                    
    
@@ -211,10 +211,10 @@ for i=1:num_ensaios
     
     'Fim do ensaio número:'
     i
-    
+    pause(2)    % Pausa de 2 segundos para leitura do ensaio atual no terminal enquanto a rotina é executada.
 end
 
-'Todos os ensaios foram finalizados'
+'Todos os ensaios foram finalizados.'
 
 uiwait(msgbox('Salve os dados do workspace em um arquivo *.mat','Programa de Aquisição de Dados','modal'));
                                    
